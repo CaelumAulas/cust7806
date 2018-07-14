@@ -24,10 +24,13 @@ server.get("/produtos", function(request, resposta){
         }
     ]
     
+    // https://github.com/CaelumAulas/cust7806
     resposta.render("produtos/lista.ejs", {
         livros: livros
     })
 })
+
+server.use(express.static("./public"))
 
 // Async não trava Thread principal
 // Começou a pedir pro 
