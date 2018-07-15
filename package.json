@@ -1,9 +1,9 @@
 {
     "scripts": {
         "start": "npm run start-l",
-        "start-dev": "nodemon server.js",
-        "start-w": "set CDC_PORT=8080 && node server.js",
-        "start-l": "CDC_PORT=8080 node server.js"
+        "start-dev": "nodemon main.js",
+        "start-w": "set CDC_PORT=8080 && node main.js",
+        "start-l": "CDC_PORT=8080 node main.js"
     },
     "dependencies": {
         "ejs": "^2.6.1",
