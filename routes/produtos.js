@@ -1,31 +1,40 @@
-module.exports = function (server){
-    console.log("Produtos.js - CRIOU O SERVIDOR")
+// Singleton
+var connectionFactory = require('../db/connectionFactory')
 
-    server.get("/produtos", function(request, resposta){
-
-        var config = require('../config')
-
-        var mysql = require('mysql')
-        var conexao = mysql.createConnection({
-            database: config.DB_NAME, 
-            user: config.DB_USER, 
-            password: config.DB_PASSWORD,
-            port: config.DB_PORT,
-            host: config.DB_HOST
+function pegaLivros(conexao){
+    return new Promise(function(resolve, reject){
+        conexao.query('SELECT * from livros', function(err, livros){
+            if(!err){
+                resolve(livros)
+            } else {
+                reject(err)
+            }
         })
+    })
+}
 
-        // Assíncrono
-        // Callback
-        conexao.query('SELECT * FROM livros', function processaResultados(erro, livros){
-            conexao.end()            
-            if(!erro) {
+module.exports = function (server){    
+    server.get("/produtos", function(request, resposta){
+        connectionFactory.getConnection()
+            .then(function(conexao){
+                return pegaLivros(conexao)
+            })
+            .then(function(livros){
                 resposta.render("produtos/lista.ejs", {
                     livros: livros
                 })
-            } else {
-                resposta.send(erro)
-            }
-        })
-        
+            })
+            .catch(function(erro){
+                resposta.send(erro.message)
+            })
+        // try {
+        //     var conexao = await connectionFactory.getConnection()
+        //     var livros = await pegaLivros(conexao)
+        //     resposta.render("produtos/lista.ejs", {
+        //         livros: livros
+        //     })
+        // } catch (e){
+        //     resposta.send(erro.message)
+        // }
     })
 }
