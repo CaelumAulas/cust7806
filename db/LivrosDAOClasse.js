@@ -1,6 +1,6 @@
 function pegaLivros(conexao){
     return new Promise(function(resolve, reject){
-        conexao.query('SELECT * from Livros', function(err, livros){
+        conexao.query('SELECT * from livros', function(err, livros){
             if(!err){
                 resolve(livros)
             } else {
@@ -22,9 +22,16 @@ function salvaLivro(conexao, livro){
     })
 }
 
-module.exports = function(conexao){
-    return {
-        salvar: (livro) => salvaLivro(conexao, livro)
-        ,lista: () => pegaLivros(conexao)
+module.exports = class LivrosDAO{
+    constructor(conexao){
+        this._conexao = conexao
+    }
+
+    salvar(livro) {
+        return salvaLivro(this._conexao, livro)
+    }
+
+    lista() {
+        return pegaLivros(this._conexao)
     }
 }

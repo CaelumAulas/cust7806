@@ -18,6 +18,19 @@ require('./routes/produtos')(server)
 
 server.use(express.static("./public"))
 
+server.use(function(request, resposta, next){
+    resposta.status(404).render('erros/erro.ejs', {
+        erro: "404 - Not Found"
+    })
+})
+
+server.use(function(erro, request, resposta, next){
+    resposta.format({
+        html: () => resposta.status(500).render("erros/erro.ejs", {erro: erro})
+        ,json: () => resposta.status(500).send(erro.message)
+    })
+})
+
 module.exports = server
 
 // var queryString = require('query-string')

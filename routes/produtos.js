@@ -4,20 +4,25 @@ var connectionFactory = require('../db/connectionFactory')
 var LivrosDAO = require('../db/LivrosDAO')
 
 module.exports = function (server){    
-    server.get("/produtos", async function(request, resposta){
+    server.get("/produtos", async function(request, resposta, next){
         try {
             var conexao = await connectionFactory.getConnection()
-            
-            var livrosDAO = LivrosDAO(conexao)
+
+            var livrosDAO = new LivrosDAO(conexao)
+
             var livros = await livrosDAO.lista()
 
             conexao.release()
 
-            resposta.render("produtos/lista.ejs", {
-                livros: livros
+            resposta.format({
+                html: () => resposta.render("produtos/lista.ejs", {
+                    livros: livros
+                })
+                ,json: () => resposta.send({livros: livros})
             })
+            
         } catch (erro){
-            resposta.send(erro.message)
+            next(erro)
         }
     })
 
@@ -25,7 +30,7 @@ module.exports = function (server){
         resposta.render("produtos/form.ejs", {validationErrors: []})
     })
 
-    server.post("/produtos", async function(request, resposta){
+    server.post("/produtos", async function(request, resposta, next){
         var livro = request.body
         
         request.assert("titulo", "Título inválido").notEmpty()
@@ -38,19 +43,18 @@ module.exports = function (server){
             var conexao = await connectionFactory.getConnection()
 
             try {
+                var livrosDAO = new LivrosDAO(conexao)
 
-                var livrosDAO = LivrosDAO(conexao)
                 await livrosDAO.salvar(livro)
-
                 conexao.release()
 
                 resposta.redirect("/produtos")
             } catch(erroDB) {
-                resposta.send(erroDB)
+                next(erroDB)
             }
 
         } catch(validationErrors) {
-            resposta.render("produtos/form.ejs", {validationErrors})
+            resposta.status(400).render("produtos/form.ejs", {validationErrors})
         }
     })
 }
